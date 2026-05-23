@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teleturnieje</title>
+
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
+
+    :root{
+      --bg:#0f1115;
+      --card:#181b22;
+      --card-hover:#1f232c;
+      --border:#2a2f3a;
+      --text:#f2f2f2;
+      --muted:#9ca3af;
+
+      --blue:#3b82f6;
+      --green:#22c55e;
+      --orange:#f59e0b;
+    }
+
+    body{
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height:100vh;
+    }
+
+    .container{
+      width:min(1100px,92%);
+      margin:auto;
+    }
+
+    /* HEADER */
+
+    header{
+      padding:28px 0;
+      border-bottom:1px solid var(--border);
+      background:#111318;
+    }
+
+    .header-inner{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .logo{
+      font-size:28px;
+      font-weight:700;
+      letter-spacing:0.5px;
+    }
+
+    .logo span{
+      color:var(--blue);
+    }
+
+    nav{
+      display:flex;
+      gap:22px;
+      color:var(--muted);
+      font-size:15px;
+    }
+
+    /* HERO */
+
+    .hero{
+      padding:80px 0 50px;
+      text-align:center;
+    }
+
+    .hero h1{
+      font-size:56px;
+      line-height:1.1;
+      margin-bottom:20px;
+    }
+
+    .hero p{
+      color:var(--muted);
+      font-size:18px;
+      max-width:700px;
+      margin:auto;
+    }
+
+    /* GAMES */
+
+    .games{
+      padding:30px 0 80px;
+    }
+
+    .games-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+      gap:28px;
+    }
+
+    .game-card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:22px;
+      padding:30px;
+      text-decoration:none;
+      color:inherit;
+      transition:0.25s ease;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .game-card:hover{
+      transform:translateY(-6px);
+      background:var(--card-hover);
+      border-color:#3a4250;
+      box-shadow:0 20px 40px rgba(0,0,0,0.35);
+    }
+
+    .top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:26px;
+    }
+
+    .icon{
+      font-size:44px;
+    }
+
+    .badge{
+      padding:8px 14px;
+      border-radius:999px;
+      font-size:13px;
+      font-weight:700;
+      color:white;
+    }
+
+    .blue{
+      background:var(--blue);
+    }
+
+    .green{
+      background:var(--green);
+    }
+
+    .orange{
+      background:var(--orange);
+      color:#111;
+    }
+
+    .game-card h2{
+      font-size:34px;
+      margin-bottom:14px;
+    }
+
+    .game-card p{
+      color:var(--muted);
+      line-height:1.7;
+      margin-bottom:24px;
+    }
+
+    .meta{
+      display:flex;
+      justify-content:space-between;
+      font-size:14px;
+      color:#c7c7c7;
+    }
+
+    .play{
+      margin-top:28px;
+      display:inline-block;
+      padding:12px 18px;
+      border-radius:12px;
+      background:#242a35;
+      color:white;
+      font-size:14px;
+      font-weight:700;
+      transition:0.2s;
+    }
+
+    .game-card:hover .play{
+      background:#2f3744;
+    }
+
+    footer{
+      border-top:1px solid var(--border);
+      padding:28px 0;
+      text-align:center;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    @media(max-width:700px){
+
+      .hero h1{
+        font-size:40px;
+      }
+
+      nav{
+        display:none;
+      }
+
+      .game-card h2{
+        font-size:28px;
+      }
+
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+
+  <header>
+    <div class="container header-inner">
+
+      <div class="logo">
+        Tele<span>Quiz</span>
+      </div>
+
+      <nav>
+        <span>Teleturnieje</span>
+        <span>Quizy</span>
+        <span>Fiszki</span>
+      </nav>
+
+    </div>
+  </header>
+
+  <!-- HERO -->
+
+  <section class="hero">
+    <div class="container">
+
+      <h1>
+        Wybierz grę<br>
+        i zacznij grać
+      </h1>
+
+      <p>
+        Klasyczne teleturnieje, szybkie quizy i fiszki
+        w prostym ciemnym stylu.
+      </p>
+
+    </div>
+  </section>
+
+  <!-- GAMES -->
+
+  <section class="games">
+    <div class="container">
+
+      <div class="games-grid">
+
+        <!-- MILIONERZY -->
+
+        <a class="game-card" href="./milionerzy.html">
+
+          <div class="top">
+            <div class="icon">🏆</div>
+            <div class="badge blue">teleturniej</div>
+          </div>
+
+          <h2>Milionerzy</h2>
+
+          <p>
+            Odpowiadaj na pytania i walcz
+            o główną wygraną jak w klasycznym teleturnieju.
+          </p>
+
+          <div class="meta">
+          </div>
+
+          <div class="play">
+            Zagraj →
+          </div>
+
+        </a>
+
+        <!-- 1Z10 -->
+
+        <a class="game-card" href="./1z10.html">
+
+          <div class="top">
+            <div class="icon">🎯</div>
+            <div class="badge green">quiz</div>
+          </div>
+
+          <h2>1 z 10</h2>
+
+          <p>
+            Szybkie pytania, presja czasu
+            i sprawdzenie wiedzy w dynamicznym stylu.
+          </p>
+
+          <div class="meta">
+          </div>
+
+          <div class="play">
+            Zagraj →
+          </div>
+
+        </a>
+
+        <!-- FISZKI -->
+
+        <a class="game-card" href="./fiszki.html">
+
+          <div class="top">
+            <div class="icon">📚</div>
+            <div class="badge orange">nauka</div>
+          </div>
+
+          <h2>Fiszki</h2>
+
+          <p>
+            Ucz się pojęć i definicji
+            za pomocą prostych kart do nauki.
+          </p>
+
+          <div class="meta">
+          </div>
+
+          <div class="play">
+            Otwórz →
+          </div>
+
+        </a>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+
+  <footer>
+    © 2025 TeleQuiz
+  </footer>
+
+</body>
+</html>

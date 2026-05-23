@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta 
+  name="viewport" 
+  content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
+/>
+  <title>AI Flashcards</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root {
+  --bg: #090a0f;
+  --panel: #12141c;
+  --panel-back: #161922;
+  --border: #1f2430;
+  --text: #f3f4f6;
+  --text-muted: #808a9d;
+  --accent: #3b82f6;
+
+  --success: #10b981;
+  --success-bg: rgba(16, 185, 129, 0.06);
+
+  --wrong: #ef4444;
+  --wrong-bg: rgba(239, 68, 68, 0.06);
+
+  --card-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.8);
+  --btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+
+  min-height: 100dvh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding:
+    max(16px, env(safe-area-inset-top))
+    max(16px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
+
+  -webkit-font-smoothing: antialiased;
+
+  user-select: none;
+  -webkit-user-select: none;
+
+  overflow-x: hidden;
+}
+
+.app {
+  width: 100%;
+  max-width: 760px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  gap: 20px;
+}
+
+.logo h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.logo p {
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.counter {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.flashcard {
+  width: 100%;
+
+  min-height: 420px;
+  height: 65vh;
+  max-height: 720px;
+
+  perspective: 2000px;
+  margin-bottom: 24px;
+
+  touch-action: pan-y;
+}
+
+.flashcard-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  transition: transform 0.45s ease;
+  transform-style: preserve-3d;
+
+  cursor: pointer;
+
+  will-change: transform;
+}
+
+.flashcard.flipped .flashcard-inner {
+  transform: rotateY(180deg);
+}
+
+.card-face {
+  position: absolute;
+
+  width: 100%;
+  height: 100%;
+
+  border-radius: 24px;
+  overflow: hidden;
+
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+
+  border: 1px solid var(--border);
+
+  background: var(--panel);
+
+  box-shadow: var(--card-shadow);
+
+  padding: 40px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.back {
+  transform: rotateY(180deg);
+  background: var(--panel-back);
+}
+
+.type {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+
+  padding: 6px 12px;
+
+  border-radius: 6px;
+
+  background: #1e2230;
+
+  color: var(--text-muted);
+
+  font-size: 0.75rem;
+  font-weight: 700;
+
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.back .type {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+}
+
+.question,
+.answer {
+  font-size: clamp(1.8rem, 3vw, 3rem);
+
+  line-height: 1.45;
+
+  letter-spacing: -0.5px;
+
+  margin: auto 0;
+
+  white-space: pre-line;
+
+  overflow-y: auto;
+
+  padding-right: 4px;
+}
+
+.question {
+  font-weight: 700;
+}
+
+.answer {
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hint {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.controls-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+button {
+  border: none;
+  outline: none;
+  cursor: pointer;
+
+  font-family: inherit;
+
+  transition: all 0.2s ease;
+}
+
+.btn {
+  padding: 14px 20px;
+
+  min-height: 52px;
+
+  border-radius: 12px;
+
+  font-weight: 600;
+  font-size: 0.95rem;
+
+  background: var(--panel);
+
+  color: var(--text);
+
+  border: 1px solid var(--border);
+
+  box-shadow: var(--btn-shadow);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  flex: 1;
+}
+
+.btn:hover {
+  background: #181b26;
+  border-color: #2e3547;
+  color: #fff;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  border: none;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+}
+
+.success-btn {
+  background: var(--success-bg);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: var(--success);
+}
+
+.success-btn:hover {
+  background: rgba(16, 185, 129, 0.15);
+}
+
+.wrong-btn {
+  background: var(--wrong-bg);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: var(--wrong);
+}
+
+.wrong-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.summary-screen {
+  display: none;
+
+  padding: 40px;
+
+  border-radius: 24px;
+
+  background: var(--panel);
+
+  border: 1px solid var(--border);
+
+  box-shadow: var(--card-shadow);
+
+  text-align: center;
+}
+
+.summary-screen.show {
+  display: block;
+}
+
+.progress {
+  width: 100%;
+  height: 4px;
+
+  background: #181b26;
+
+  border-radius: 999px;
+
+  overflow: hidden;
+
+  margin-top: 32px;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+
+  background: var(--accent);
+
+  transition: width 0.3s ease;
+}
+
+@media (hover: none) {
+  .btn:hover {
+    background: var(--panel);
+    border-color: var(--border);
+  }
+}
+
+@media (max-width: 600px) {
+  body {
+    align-items: stretch;
+  }
+
+  .topbar {
+    flex-direction: column-reverse;
+    gap: 12px;
+  }
+
+  .topbar-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .flashcard {
+    height: 62vh;
+    min-height: 360px;
+  }
+
+  .card-face {
+    padding: 24px;
+  }
+
+  .controls {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  .question,
+  .answer {
+    font-size: 1.15rem;
+  }
+}
+  </style>
+</head>
+<body>
+
+  <div class="app">
+
+    <div class="topbar">
+      <div class="logo">
+        <h1>Fiszki AI</h1>
+        <p>Kliknij kartę, aby zobaczyć odpowiedź, a następnie oceń swój wynik.</p>
+      </div>
+
+      <div class="topbar-actions">
+        <button class="btn btn-sm" id="shuffleBtn">Tasuj</button>
+        <div class="counter" id="counter">1 / 12</div>
+      </div>
+    </div>
+
+    <div class="flashcard" id="flashcard">
+      <div class="flashcard-inner">
+
+        <div class="card-face front">
+          <div>
+            <div class="type">Pytanie</div>
+          </div>
+          <div class="question" id="question"></div>
+          <div class="bottom">
+            <div class="hint">Kliknij, aby odkryć odpowiedź</div>
+          </div>
+        </div>
+
+        <div class="card-face back">
+          <div>
+            <div class="type">Odpowiedź</div>
+          </div>
+          <div class="answer" id="answer"></div>
+          <div class="bottom">
+            <div class="hint">Kliknij, aby odwrócić z powrotem</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="controls-group">
+      <div class="controls controls-top">
+        <button class="btn wrong-btn" id="dontKnowBtn">Nie wiedziałem</button>
+        <button class="btn success-btn" id="knowBtn">Wiedziałem</button>
+      </div>
+    </div>
+
+    <div class="summary-screen" id="summaryScreen">
+      <h2>Sesja zakończona 🎉</h2>
+      <p>Przejrzałeś wszystkie dostępne fiszki. Co chcesz zrobić teraz?</p>
+
+      <div class="summary-stats">
+        <div class="stat">
+          <strong id="goodCount">0</strong>
+          Ukończone
+        </div>
+        <div class="stat">
+          <strong id="badCount">0</strong>
+          Do powtórki
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="repeatWrongBtn" style="width: 100%; max-width: 300px; margin: 0 auto;">
+        Powtórz błędne pytania
+      </button>
+    </div>
+
+    <div class="progress">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+  </div>
+
+  <script>
+    const flashcards = [
+      // Podstawowe fiszki (oryginalna pula)
+      { question: "Co oznacza skrót AI?", answer: "Artificial Intelligence — sztuczna inteligencja." },
+      { question: "Jak nazywa się chatbot stworzony przez OpenAI?", answer: "ChatGPT." },
+      { question: "Co to jest sieć neuronowa?", answer: "System obliczeniowy inspirowany działaniem ludzkiego mózgu." },
+      { question: "Co oznacza skrót LLM?", answer: "Large Language Model — duży model językowy." },
+      { question: "Co to jest prompt?", answer: "Polecenie lub pytanie wpisywane do modelu AI." },
+      { question: "Co oznacza GPT w nazwie ChatGPT?", answer: "Generative Pre-trained Transformer." },
+      { question: "Co to jest fine-tuning modelu AI?", answer: "Dodatkowe trenowanie gotowego modelu na konkretnych danych." },
+      { question: "Co to jest RAG?", answer: "Retrieval-Augmented Generation — generowanie wspierane wyszukiwaniem danych." },
+      { question: "Co oznacza multimodal AI?", answer: "AI rozumiejące różne typy danych: tekst, obraz, audio itd." },
+      { question: "Co to jest embedding?", answer: "Wektorowa reprezentacja tekstu lub danych." },
+      { question: "Co to jest context window?", answer: "Maksymalna ilość tekstu przetwarzana przez model jednocześnie." },
+      { question: "Co oznacza RLHF?", answer: "Reinforcement Learning from Human Feedback." },
+
+      // Lista 1 (Wybór z wariantami A, B, C, D)
+      { question: "Co oznacza skrót 'AI'?\n\nA) Auto Installer\nB) Artificial Intelligence\nC) Advanced Input\nD) Audio Interface", answer: "Poprawna odpowiedź: B\n\nArtificial Intelligence (Sztuczna inteligencja)." },
+      { question: "Jak nazywa się chatbot stworzony przez firmę OpenAI?\n\nA) Gemini\nB) Claude\nC) ChatGPT\nD) Copilot", answer: "Poprawna odpowiedź: C\n\nChatGPT." },
+      { question: "Co to jest sieć neuronowa?\n\nA) Kabel w komputerze\nB) System obliczeniowy inspirowany ludzkim mózgu\nC) Protokół internetowy\nD) Baza danych", answer: "Poprawna odpowiedź: B\n\nSystem obliczeniowy inspirowany ludzkim mózgiem." },
+      { question: "Jak nazywa się asystent AI stworzony przez firmę Anthropic?\n\nA) Alexa\nB) Cortana\nC) Bard\nD) Claude", answer: "Poprawna odpowiedź: D\n\nClaude." },
+      { question: "W którym roku ChatGPT został publicznie udostępniony po raz pierwszy?\n\nA) 2020\nB) 2021\nC) 2022\nD) 2023", answer: "Poprawna odpowiedź: C\n\nPod koniec listopada 2022 roku." },
+      { question: "Co to jest 'prompt' w kontekście modeli językowych?\n\nA) Błąd w kodzie programu\nB) Zapytanie lub polecenie kierowane do modelu AI\nC) Rodzaj procesora graficznego\nD) Protokół szyfrowania danych", answer: "Poprawna odpowiedź: B\n\nZapytanie lub polecenie kierowane do modelu AI." },
+      { question: "Jak nazywa się technika uczenia AI polegająca na systemie nagród i kar?\n\nA) Supervised learning\nB) Unsupervised learning\nC) Reinforcement learning\nD) Transfer learning", answer: "Poprawna odpowiedź: C\n\nReinforcement learning (Uczenie przez wzmacnianie)." },
+      { question: "Co oznacza skrót 'LLM' w świecie AI?\n\nA) Low Level Machine\nB) Layered Logic Module\nC) Large Language Model\nD) Linear Learning Method", answer: "Poprawna odpowiedź: C\n\nLarge Language Model (Duży model językowy)." },
+      { question: "W którym roku opublikowano przełomowy artykuł 'Attention is All You Need' opisujący architekturę Transformer?\n\nA) 2015\nB) 2016\nC) 2017\nD) 2018", answer: "Poprawna odpowiedź: C\n\nW 2017 roku przez naukowców z Google." },
+      { question: "Co to jest 'halucynacja' (hallucination) w kontekście modeli językowych?\n\nA) Wizualizacja danych 3D przez AI\nB) Błąd serwera podczas generowania tekstu\nC) Generowanie fałszywych lecz wiarygodnie brzmiących informacji\nD) Technika kompresji modelu", answer: "Poprawna odpowiedź: C\n\nGenerowanie fałszywych, lecz przekonująco brzmiących informacji." },
+      { question: "Co oznacza skrót 'RLHF' stosowany w trenowaniu modeli jak ChatGPT czy Claude?\n\nA) Recursive Learning with High Fidelity\nB) Reinforcement Learning from Human Feedback\nC) Rapid Language Handling Framework\nD) Rotational Logic with Hierarchical Functions", answer: "Poprawna odpowiedź: B\n\nReinforcement Learning from Human Feedback (Uczenie przez wzmacnianie na podstawie opinii ludzkich)." },
+      { question: "Co opisuje paradoks Moraveca (Moravec's paradox) w dziedzinie AI?\n\nA) Im więcej danych, tym lepiej działa model AI\nB) Modele AI podwajają możliwości co 18 miesięcy\nC) Inteligencja AI przekroczy ludzką dokładnie w 2045 roku\nD) To co łatwe dla człowieka jest trudne dla AI i odwrotnie", answer: "Poprawna odpowiedź: D\n\nTo co łatwe dla człowieka (np. poruszanie się w przestrzeni, rozpoznawanie twarzy) jest trudne dla AI, a to co trudne dla nas (zaawansowana matematyka, analiza danych) dla maszyn jest banalne." },
+
+      // Lista 2 (Quiz błyskawiczny)
+      { question: "Co oznacza skrót GPU, kluczowy przy trenowaniu AI?\n\n• Graphics Processing Unit\n• General Processing Utility\n• Global Program Unit\n• Grid Power Usage", answer: "Poprawna odpowiedź: Graphics Processing Unit\n\nKarta graficzna o wysokiej wydajności obliczeń równoległych." },
+      { question: "Jak nazywa się model AI od Google DeepMind (następca Barda)?\n\n• Claude\n• Llama\n• Gemini\n• Nova", answer: "Poprawna odpowiedź: Gemini" },
+      { question: "Co to jest 'deep learning'?\n\n• Przeszukiwanie głębokich baz danych\n• Uczenie maszynowe z wielowarstwowymi sieciami neuronowymi\n• Szyfrowanie danych w wielu warstwach\n• Technika backupu danych", answer: "Poprawna odpowiedź: Uczenie maszynowe z wielowarstwowymi sieciami neuronowymi" },
+      { question: "Firma OpenAI została założona między innymi przez...\n\n• Jeff Bezos i Mark Zuckerberg\n• Elon Musk i Sam Altman\n• Bill Gates i Satya Nadella\n• Larry Page i Sergey Brin", answer: "Poprawna odpowiedź: Elon Musk i Sam Altman" },
+      { question: "Co to jest 'token' w kontekście LLM?\n\n• Klucz dostępu do API\n• Kryptowaluta do płacenia za AI\n• Podstawowa jednostka tekstu przetwarzana przez model\n• Typ pliku danych", answer: "Poprawna odpowiedź: Podstawowa jednostka tekstu przetwarzana przez model" },
+      { question: "Jak nazywa się model open-source od firmy Meta AI?\n\n• Falcon\n• Mistral\n• Llama\n• Grok", answer: "Poprawna odpowiedź: Llama" },
+      { question: "Co to jest 'fine-tuning' modelu AI?\n\n• Ręczne poprawianie błędów w kodzie\n• Dodatkowe trenowanie pre-trenowanego modelu na specyficznym zbiorze danych\n• Optymalizacja szybkości działania serwera\n• Kalibracja głośności głosu AI", answer: "Poprawna odpowiedź: Dodatkowe trenowanie pre-trenowanego modelu na specyficznym zbiorze danych" },
+      { question: "Co oznacza GPT w nazwie ChatGPT?\n\n• General Purpose Technology\n• Generative Pre-trained Transformer\n• Global Processing Tool\n• Guided Prediction Training", answer: "Poprawna odpowiedź: Generative Pre-trained Transformer" },
+      { question: "Która firma stworzyła model AI o nazwie 'Copilot'?\n\n• Google\n• Apple\n• Microsoft\n• Amazon", answer: "Poprawna odpowiedź: Microsoft" },
+      { question: "Co to jest 'context window' (okno kontekstowe) w LLM?\n\n• Okno aplikacji na ekranie\n• Maksymalna ilość tekstu jaką model może przetworzyć naraz\n• Zakres dat danych treningowych\n• Interfejs użytkownika do wpisywania promptów", answer: "Poprawna odpowiedź: Maksymalna ilość tekstu jaką model może przetworzyć naraz" },
+      { question: "Jak nazywa się metoda, w której model uczy się na nieoznakowanych danych?\n\n• Supervised learning\n• Reinforcement learning\n• Unsupervised learning\n• Active learning", answer: "Poprawna odpowiedź: Unsupervised learning" },
+      { question: "Co to jest 'embeddings' w przetwarzaniu języka naturalnego?\n\n• Osadzanie filmów wideo w tekście\n• Liczbowa reprezentacja słów lub zdań w przestrzeni wektorowej\n• Szyfrowanie wiadomości tekstowych\n• Kompresja plików dźwiękowych", answer: "Poprawna odpowiedź: Liczbowa reprezentacja słów lub zdań w przestrzeni wektorowej" },
+      { question: "Rok założenia firmy Anthropic (twórcy Claude)?\n\n• 2019\n• 2020\n• 2021\n• 2022", answer: "Poprawna odpowiedź: 2021" },
+      { question: "Co to jest 'GAN' (Generative Adversarial Network)?\n\n• Rodzaj szyfrowania\n• Sieć złożona z generatora i dyskryminatora trenujących się wzajemnie\n• Protokół komunikacji między AI\n• Technika kompresji sieci neuronowej", answer: "Poprawna odpowiedź: Sieć złożona z generatora i dyskryminatora trenujących się wzajemnie" },
+      { question: "Który model od OpenAI jest znany z zaawansowanego rozumowania (reasoning)?\n\n• GPT-3\n• DALL-E\n• o1 / o3\n• Whisper", answer: "Poprawna odpowiedź: o1 / o3" },
+      { question: "Co to jest 'RAG' w architekturze systemów AI?\n\n• Random Algorithm Generation\n• Retrieval-Augmented Generation\n• Recursive Attention Gating\n• Rapid API Gateway", answer: "Poprawna odpowiedź: Retrieval-Augmented Generation" },
+      { question: "Jak nazywa się technika zadawania pytań pomagająca AI lepiej rozumować krok po kroku?\n\n• Zero-shot prompting\n• Few-shot prompting\n• Chain-of-thought prompting\n• System prompting", answer: "Poprawna odpowiedź: Chain-of-thought prompting" },
+      { question: "Co to jest 'benchmark' w ocenie modeli AI?\n\n• Koszt trenowania modelu\n• Standaryzowany test do porównywania możliwości modeli\n• Ilość parametrów modelu\n• Czas odpowiedzi serwera", answer: "Poprawna odpowiedź: Standaryzowany test do porównywania możliwości modeli" },
+      { question: "Jak nazywa się technologia AI od Google do generowania obrazów zintegrowana z ich produktami?\n\n• DALL-E\n• Midjourney\n• Imagen\n• Stable Diffusion", answer: "Poprawna odpowiedź: Imagen" },
+      { question: "Co to jest 'temperature' jako parametr modelu językowego?\n\n• Temperatura serwera GPU\n• Szybkość generowania tekstu\n• Parametr kontrolujący losowość i kreatywność odpowiedzi\n• Długość generowanego tekstu", answer: "Poprawna odpowiedź: Parametr kontrolujący losowość i kreatywność odpowiedzi" },
+      { question: "Co oznacza termin 'multimodal AI'?\n\n• AI działające na wielu serwerach jednocześnie\n• AI przetwarzające wiele typów danych (tekst, obraz, dźwięk)\n• AI z wieloma osobowościami\n• AI działające w wielu językach", answer: "Poprawna odpowiedź: AI przetwarzające wiele typów danych (tekst, obraz, dźwięk)" },
+      { question: "Jak nazywa się proces sprawdzania czy AI działa zgodnie z wartościami człowieka?\n\n• Debugging\n• AI Safety / AI Alignment\n• Benchmarking\n• Fine-tuning", answer: "Poprawna odpowiedź: AI Safety / AI Alignment" },
+
+      // Lista 3 (Prawda czy Fałsz)
+      { question: "Prawda czy Fałsz?\n\nChatGPT zostało stworzone przez firmę Google.", answer: "FAŁSZ\n\nZostał stworzony przez OpenAI." },
+      { question: "Prawda czy Fałsz?\n\nGPT-4 jest modelem wielomodalnym — rozumie zarówno tekst jak i obrazy.", answer: "PRAWDA" },
+      { question: "Prawda czy Fałsz?\n\nSieć neuronowa jest bezpośrednią kopią ludzkiego mózgu.", answer: "FAŁSZ\n\nJest jedynie matematycznym systemem luźno inspirowanym strukturą biologiczną." },
+      { question: "Prawda czy Fałsz?\n\nArchitektura Transformer jest podstawą większości współczesnych modeli językowych.", answer: "PRAWDA" },
+      { question: "Prawda czy Fałsz?\n\nModel AI może 'halucynować' — czyli generować fałszywe ale przekonujące informacje.", answer: "PRAWDA" },
+      { question: "Prawda czy Fałsz?\n\nAnthropic to firma założona przez byłych pracowników OpenAI.", answer: "PRAWDA" },
+      { question: "Prawda czy Fałsz?\n\nDALL-E to model do generowania muzyki.", answer: "FAŁSZ\n\nSłuży do generowania obrazów (muzyczny model od OpenAI to np. Jukebox)." },
+      { question: "Prawda czy Fałsz?\n\nIm więcej parametrów ma model, tym zawsze jest mądrzejszy.", answer: "FAŁSZ\n\nKluczowa jest architektura i wysoka jakość danych treningowych (mniejsze, świetnie dostrojone modele bywają lepsze od gigantów)." },
+      { question: "Prawda czy Fałsz?\n\nClaude to asystent AI stworzony przez Anthropic.", answer: "PRAWDA" },
+      { question: "Prawda czy Fałsz?\n\nReinforcement learning polega na uczeniu modelu poprzez system nagród i kar.", answer: "PRAWDA" },
+      { question: "Prawda czy Fałsz?\n\nModele językowe rozumieją tekst tak samo jak człowiek rozumie znaczenie słów.", answer: "FAŁSZ\n\nPrzetwarzają go w oparciu o statystyczne wzorce i wektory prawdopodobieństwa." },
+      { question: "Prawda czy Fałsz?\n\nStable Diffusion to model open-source do generowania obrazów.", answer: "PRAWDA" },
+      { question: "Prawda czy Fałsz?\n\nLlama to model od firmy Meta.", answer: "PRAWDA" },
+      { question: "Prawda czy Fałsz?\n\nAGI (Artificial General Intelligence) to AI która już istnieje i jest dostępna publicznie.", answer: "FAŁSZ\n\nAGI to hipotetyczna silna sztuczna inteligencja dorównująca człowiekowi w każdym zadaniu intelektualnym — prace nad nią trwają." },
+      { question: "Prawda czy Fałsz?\n\nEmbedding to sposób na zamianę tekstu na liczby (wektory).", answer: "PRAWDA" },
+      { question: "Prawda czy Fałsz?\n\nModele AI uczą się wyłącznie z danych tekstowych.", answer: "FAŁSZ\n\nModele wielomodalne trenują również na obrazach, filmach, kodzie oraz dźwiękach." },
+      { question: "Prawda czy Fałsz?\n\nWhisper to model OpenAI służący do rozpoznawania mowy.", answer: "PRAWDA" },
+      { question: "Prawda czy Fałsz?\n\nKażde pytanie do ChatGPT kosztuje firmę pieniądze (prąd i serwery).", answer: "PRAWDA\n\nMoc obliczeniowa infrastruktury chmurowej opiera się na drogich zasobach." },
+      { question: "Prawda czy Fałsz?\n\nAI nie potrzebuje dużych ilości danych do trenowania.", answer: "FAŁSZ\n\nDuże modele bazowe (LLM) wymagają gigantycznych wieloterabajtowych zbiorów danych." },
+      { question: "Prawda czy Fałsz?\n\nChain-of-thought prompting pomaga modelom lepiej rozwiązywać zadania logiczne.", answer: "PRAWDA" },
+      { question: "Prawda czy Fałsz?\n\nGrok to model AI od firmy xAI (Elona Muska).", answer: "PRAWDA" },
+      { question: "Prawda czy Fałsz?\n\nParametry modelu AI są przechowywane w specjalnych plikach wag.", answer: "PRAWDA" },
+      { question: "Prawda czy Fałsz?\n\nModele AI zawsze odpowiadają w tym samym języku co pytanie.", answer: "FAŁSZ\n\nMogą przetłumaczyć odpowiedź lub zmienić język na życzenie użytkownika." },
+      { question: "Prawda czy Fałsz?\n\nContext window to limit ilości tekstu jaki model może przetworzyć w jednej rozmowie.", answer: "PRAWDA" }
+    ];
+
+    let current = 0;
+    let isSwiping = false;
+    let correctAnswers = [];
+    let wrongAnswers = [];
+    let cards = [...flashcards];
+
+    const questionEl = document.getElementById('question');
+    const answerEl = document.getElementById('answer');
+    const counterEl = document.getElementById('counter');
+    const progressBar = document.getElementById('progressBar');
+    const flashcard = document.getElementById('flashcard');
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    function tasujTablice(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function pokazToast(wiadomosc) {
+      const old = document.getElementById('toast');
+      if (old) old.remove();
+
+      const toast = document.createElement('div');
+      toast.id = 'toast';
+      toast.textContent = wiadomosc;
+
+      toast.style.position = 'fixed';
+      toast.style.bottom = '30px';
+      toast.style.left = '50%';
+      toast.style.transform = 'translateX(-50%)';
+      toast.style.padding = '12px 20px';
+      toast.style.background = '#1f2430';
+      toast.style.color = 'white';
+      toast.style.borderRadius = '8px';
+      toast.style.border = '1px solid #2e3547';
+      toast.style.zIndex = '9999';
+      toast.style.fontWeight = '600';
+      toast.style.fontSize = '0.9rem';
+      toast.style.boxShadow = '0 10px 25px rgba(0,0,0,0.4)';
+
+      document.body.appendChild(toast);
+
+      setTimeout(() => { toast.remove(); }, 1800);
+    }
+
+    function dzwiek() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = 620;
+        gain.gain.setValueAtTime(0.02, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.15);
+      } catch(e) {}
+    }
+
+    function renderCard() {
+      const item = cards[current];
+      questionEl.textContent = item.question;
+      answerEl.textContent = item.answer;
+      counterEl.textContent = `${current + 1} / ${cards.length}`;
+      progressBar.style.width = `${(current / cards.length) * 100}%`;
+      flashcard.classList.remove('flipped');
+    }
+
+    function nextCard() {
+      if (current >= cards.length - 1) {
+        showSummary();
+        return;
+      }
+      current = (current + 1) % cards.length;
+      renderCard();
+      dzwiek();
+    }
+
+    function prevCard() {
+      current = (current - 1 + cards.length) % cards.length;
+      renderCard();
+      dzwiek();
+    }
+
+    function markCorrect() {
+      const item = cards[current];
+      if (!correctAnswers.includes(item)) correctAnswers.push(item);
+      wrongAnswers = wrongAnswers.filter(q => q !== item);
+      pokazToast('Zapisano jako znane ✓');
+      nextCard();
+    }
+
+    function markWrong() {
+      const item = cards[current];
+      if (!wrongAnswers.includes(item)) wrongAnswers.push(item);
+      correctAnswers = correctAnswers.filter(q => q !== item);
+      pokazToast('Dodano do powtórek ✕');
+      nextCard();
+    }
+
+    function showSummary() {
+      document.getElementById('summaryScreen').classList.add('show');
+      document.querySelector('.flashcard').style.display = 'none';
+      document.querySelector('.controls-group').style.display = 'none';
+      document.getElementById('goodCount').textContent = correctAnswers.length;
+      document.getElementById('badCount').textContent = wrongAnswers.length;
+      if (wrongAnswers.length === 0) {
+        document.getElementById('repeatWrongBtn').textContent = 'Powtórz całą talię';
+      }
+    }
+
+    function repeatWrongQuestions() {
+      if (wrongAnswers.length === 0) {
+        cards = [...flashcards];
+        current = 0;
+        document.getElementById('summaryScreen').classList.remove('show');
+        document.querySelector('.flashcard').style.display = 'block';
+        document.querySelector('.controls-group').style.display = 'flex';
+        renderCard();
+        pokazToast('Uruchomiono całą talię');
+        return;
+      }
+
+      cards = [...wrongAnswers];
+      current = 0;
+      wrongAnswers = [];
+      correctAnswers = [];
+
+      document.getElementById('summaryScreen').classList.remove('show');
+      document.querySelector('.flashcard').style.display = 'block';
+      document.querySelector('.controls-group').style.display = 'flex';
+      renderCard();
+      pokazToast('Powtarzasz trudniejsze pytania');
+    }
+
+    function shuffleCards() {
+      cards = tasujTablice(cards);
+      current = 0;
+      renderCard();
+      pokazToast('Potasowano karty');
+      dzwiek();
+    }
+
+    flashcard.addEventListener('click', () => {
+      flashcard.classList.toggle('flipped');
+      dzwiek();
+    });
+
+    flashcard.addEventListener('touchstart', (e) => {
+  touchStartX = e.changedTouches[0].screenX;
+}, { passive: true });
+
+flashcard.addEventListener('touchend', (e) => {
+  touchEndX = e.changedTouches[0].screenX;
+
+  const diff = touchEndX - touchStartX;
+
+  if (Math.abs(diff) < 50) return;
+
+  if (diff < 0) {
+    nextCard();
+  } else {
+    prevCard();
+  }
+
+}, { passive: true });
+
+    document.getElementById('shuffleBtn').addEventListener('click', shuffleCards);
+    document.getElementById('knowBtn').addEventListener('click', markCorrect);
+    document.getElementById('dontKnowBtn').addEventListener('click', markWrong);
+    document.getElementById('repeatWrongBtn').addEventListener('click', repeatWrongQuestions);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') nextCard();
+      if (e.key === 'ArrowLeft') prevCard();
+      if (e.key === ' ') {
+        e.preventDefault();
+        flashcard.classList.toggle('flipped');
+      }
+    });
+
+    renderCard();
+  </script>
+
+</body>
+</html>
